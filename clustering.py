@@ -18,28 +18,24 @@ import numpy as np
 import tkinter as tk
 
 root = tk.Tk()
-
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
-#Import data
+#Parameters
+img_shape = [100,100]
+maxlevel = 3 #separation perhaps better name.
+num_data = 9 #depends on levels
+
+#Import
 #fname = 'chordae.jpg'
-fname = 'cartilage surface 4.jpg'
+fname = 'cartilage_surface.jpg'
 img = io.imread(fname)
 
-#Preprocess data
-##Select channel
-img = img[:,:,0]
-##resize
-shape = [100,100]
-img = resize(img,shape)
+#Preprocess
+img = img[:,:,0] #Select channel 
+img = resize(img,img_shape) ##resize
 
-#Parameters
-maxlevel = 3
-data_dim = shape #...seems unnecessary...
-#Allocate array for features
-data_dim.append(9) #depends on levels
-data = np.zeros(data_dim)
+data = np.zeros(img_shape + [num_data]) #array to hold data
 
 x = 1
 y = 1
@@ -88,6 +84,7 @@ for x,y in np.ndindex(img.shape):
                 dI = [sum(dI)]
             data[x,y,pos+1:pos+len(dI)+1] = dI           
             pos = pos + len(dI)
+
 data[:,:,0] = img
 
 #remove edgesd
