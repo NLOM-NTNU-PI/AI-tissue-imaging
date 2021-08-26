@@ -115,7 +115,7 @@ ax.imshow(img)
 ax = fig.add_subplot(122)
 ax.imshow(labels)
 
-#Set window
+#Set position of window on screen
 mngr = plt.get_current_fig_manager() #FigureManagerQT which inherits from QWidget
 geom = mngr.window.geometry()
 x,y,dx,dy = geom.getRect()
