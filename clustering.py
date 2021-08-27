@@ -17,6 +17,8 @@ import numpy as np
 
 import tkinter as tk
 
+import img_utils as utils
+
 root = tk.Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
@@ -41,26 +43,6 @@ x = 1
 y = 1
 d = 1
 
-#Returns coordinates of neighbours at certain distances
-#...can this not be hard-coded?...
-def neighbour(x,y,level):
-    if level == 1:
-        coords = [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]
-    elif level == 2:
-        coords = [[x-1,y-1],[x-1,y+1],[x+1,y-1],[x+1,y+1]]
-    elif level == 3:
-        coords = [[x-2,y],[x+2,y],[x,y-2],[x,y+2]]
-        # etc..
-    return coords    
-
-#Calculates the total number of neighbours up to a certain level. 
-#Can be used to preassign size of arrays.
-def num_neighbours(level):
-    num = 0
-    for i in range(1,level+1):
-        num = num + len(neighbour(0,0,i))
-    return num
-
 #Compute delta I for nearest neighbours
 isotropic = 1
 for x,y in np.ndindex(img.shape):
@@ -77,7 +59,7 @@ for x,y in np.ndindex(img.shape):
         pos = 0
         for level in range(1,maxlevel+1):
             dI = []
-            ncoords = neighbour(x, y, level)
+            ncoords = utils.neighbour(x, y, level)
             for ncoord in ncoords:
                 dI.append(img[coord]-img[tuple(ncoord)])
             if isotropic:
