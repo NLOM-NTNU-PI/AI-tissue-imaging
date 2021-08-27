@@ -24,13 +24,13 @@ import img_utils as utils
 
 #Parameters
 img_shape = [100,100] #resample image to this shape
-maxlevel = 3 #separation perhaps better name.
+maxlevel = 2 #separation perhaps better name.
 isotropic = 0 #if 1 sum all intensity differences at specific level
 if isotropic:
     num_features = maxlevel
 else:
     num_features = utils.num_neighbours(maxlevel) + 1 #depends on levels
-num_clusters = 6 #Clusters
+num_clusters = 2 #Clusters
 
 #Import
 #fname = 'chordae.jpg'
@@ -71,14 +71,24 @@ km.fit(data_flat)
 labels = km.labels_.reshape(data.shape[0],data.shape[1]) #reshape to image
 
 #Visualization
-fig = plt.figure('clusters')
+fig = plt.figure()
 
 ax = fig.add_subplot(121)
 ax.imshow(img_dp)
+ax.set_title('Original')
 ax.set_axis_off()
 ax = fig.add_subplot(122)
 ax.imshow(labels)
+ax.set_title('Clusters')
 ax.set_axis_off()
+fig.text(.05,.05,"{:d} clusters".format(num_clusters)\
+         + "\n{:d} levels".format(maxlevel)\
+         + "\nIsotropic: {!r}".format(bool(isotropic))\
+         + "\n{:d} Pixels".format(img_shape[0])
+         + "\nFile: " + fname)
+
+run_fname = "clusters_" + "l" + str(maxlevel) + "_c" + str(num_clusters) + "_i" + str(isotropic)
+plt.savefig("experiments/run1/" + run_fname)
 
 #Set position of window on screen
 root = tk.Tk()
