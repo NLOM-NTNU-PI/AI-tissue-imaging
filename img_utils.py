@@ -7,6 +7,8 @@ Created on Fri Aug 27 08:43:11 2021
 #Returns coordinates of neighbours at certain distances
 #...can this not be hard-coded?...
 def neighbour(x,y,level):
+    if level>3:
+        raise ValueError("levels above 3 not yet implemented")
     if level == 1:
         coords = [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]
     elif level == 2:

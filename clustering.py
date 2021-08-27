@@ -2,10 +2,13 @@
 """
 Created on Tue Aug 10 13:51:15 2021
 
+This program loads an image, extracts features/data and performs a KMeans
+clustering of the data to identify specific structures in the image. The data
+features are based on differences in intensity between neighbours at different
+separations
+
 @author: lilledah
 """
-
-#Creating a dataset for clustering an image
 
 from skimage import io
 from skimage.transform import resize
@@ -19,14 +22,15 @@ import tkinter as tk
 
 import img_utils as utils
 
-root = tk.Tk()
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-
 #Parameters
-img_shape = [100,100]
+img_shape = [100,100] #resample image to this shape
 maxlevel = 3 #separation perhaps better name.
-num_data = 9 #depends on levels
+isotropic = 0 #if 1 sum all intensity differences at specific level
+if isotropic:
+    num_features = maxlevel
+else:
+    num_features = utils.num_neighbours(maxlevel) + 1 #depends on levels
+num_clusters = 6 #Clusters
 
 #Import
 #fname = 'chordae.jpg'
@@ -37,25 +41,15 @@ img = io.imread(fname)
 img = img[:,:,0] #Select channel 
 img = resize(img,img_shape) ##resize
 
-data = np.zeros(img_shape + [num_data]) #array to hold data
+data = np.zeros(img_shape + [num_features]) #array to hold data
+data[:,:,0] = img
 
-x = 1
-y = 1
-d = 1
-
-#Compute delta I for nearest neighbours
-isotropic = 1
+#Compute delta I for neighbours
 for x,y in np.ndindex(img.shape):
     first = maxlevel
     last = img.shape[1]-maxlevel
     if x >= first and x <= last and y >= first and y <= last:
-        coord = (x,y)
-        #img[coord]
-       
-        #dI.append(img[coord] - img[x-d,y])
-        #dI.append(img[coord] - img[x+d,y])
-        #dI.append(img[coord] - img[x,y-d])
-        #dI.append(img[coord] - img[x,y+d])
+        coord = (x,y)        
         pos = 0
         for level in range(1,maxlevel+1):
             dI = []
@@ -67,35 +61,30 @@ for x,y in np.ndindex(img.shape):
             data[x,y,pos+1:pos+len(dI)+1] = dI           
             pos = pos + len(dI)
 
-data[:,:,0] = img
+img_dp = img[maxlevel:-maxlevel,maxlevel:-maxlevel] #remove padding
+data = data[maxlevel:-maxlevel,maxlevel:-maxlevel,:] #remove padding
+data_flat = data.reshape((data.shape[0]*data.shape[1],data.shape[2])) #flatten
 
-#remove edgesd
-data = data[1:-1,1:-1,0:2]
-
-dim = data.shape
-
-#flatten
-data_array = data.reshape((data.shape[0]*data.shape[1],data.shape[2]))
-
-#Cluster
-num_clusters = 2
+#Perform K-means clustering
 km = KMeans(n_clusters=num_clusters)
-km.fit(data_array)
+km.fit(data_flat)
+labels = km.labels_.reshape(data.shape[0],data.shape[1]) #reshape to image
 
-labels = km.labels_
-
-labels = labels.reshape(dim[0],dim[1])
-
+#Visualization
 fig = plt.figure('clusters')
 
-
 ax = fig.add_subplot(121)
-ax.imshow(img)
+ax.imshow(img_dp)
+ax.set_axis_off()
 ax = fig.add_subplot(122)
 ax.imshow(labels)
+ax.set_axis_off()
 
 #Set position of window on screen
+root = tk.Tk()
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
 mngr = plt.get_current_fig_manager() #FigureManagerQT which inherits from QWidget
 geom = mngr.window.geometry()
 x,y,dx,dy = geom.getRect()
-mngr.window.setGeometry(1500,100,dx,dy)
+mngr.window.setGeometry(200,200,dx,dy)
