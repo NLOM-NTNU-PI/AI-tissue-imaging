@@ -21,10 +21,10 @@ img = io.imread(fname)
 #PARAMETERS
 #Set experiment parameters
 if testing: #testing parameters
-    img_shape = [100,100] #resample image to this shape
-    levels = 2 #separation perhaps better name.
+    img_shape = [200,200] #resample image to this shape
+    levels = 5 #separation perhaps better name.
     isotropic = False #if 1 sum all intensity differences at specific level
-    num_clusters = 2
+    num_clusters = 4
 else: #run parameters
     pass
 
@@ -33,7 +33,7 @@ img = img[:,:,0] #Select channel
 img = resize(img,img_shape) #resample 
 
 #ANALYSIS
-data = utils.neighbour_diff(img, levels, isotropic)
+data = utils.neighbour_diff(img, levels, isotropic=isotropic, method='circle')
 data_flat = data.reshape((data.shape[0]*data.shape[1],data.shape[2])) #flatten
 km = KMeans(n_clusters=num_clusters) #Perform K-means clustering
 km.fit(data_flat)

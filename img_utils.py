@@ -9,7 +9,7 @@ import numpy as np
 #Function computes the difference in grey levels to neighbours at different distances from a pxiel and 
 #returns a hyperspectral image with the differences at different distances.
 #Must 
-def neighbour_diff(img,levels,isotropic=False):
+def neighbour_diff(img, levels, isotropic=False, method='levels'):
     #check if ndarray
     if not(isinstance(img,np.ndarray)):
         pass
@@ -21,30 +21,43 @@ def neighbour_diff(img,levels,isotropic=False):
         #throw exception
 
     #compute num_features.
-    if isotropic:
-        num_features = levels
-    else:
-        num_features = num_neighbours(levels) + 1 #depends on levels
-    #initalize data array
-    data = np.zeros(list(img.shape) + [num_features]) #array to hold data
-    data[:,:,0] = img 
+    if method == 'levels':
+        if isotropic:
+            num_features = levels + 1
+        else:
+            num_features = num_neighbours(levels) + 1 #depends on levels
+        #initalize data array
+        data = np.zeros(list(img.shape) + [num_features]) #array to hold data
+        data[:,:,0] = img 
+    elif method == 'circle':
+        num_features = len(neighbours_in_circle(0,0,levels)) + 1
+        #initalize data array
+        data = np.zeros(list(img.shape) + [num_features]) #array to hold data
+        data[:,:,0] = img 
 
     #Compute data
-    for x,y in np.ndindex(img.shape):
-        first = levels
-        last = img.shape[1]-levels
+    first = levels+1
+    last = img.shape[1]-(levels+1)    
+    for x,y in np.ndindex(img.shape):        
         if x >= first and x <= last and y >= first and y <= last: #This could be improved...
             coord = (x,y)        
-            pos = 0
-            for level in range(1,levels+1):
-                dI = []
-                ncoords = neighbour(x, y, level)
-                for ncoord in ncoords:
+            pos = 0            
+            if method == 'levels':
+                for level in range(1,levels+1):
+                    dI = []            
+                    ncoords = neighbour(x, y, level)                
+                    for ncoord in ncoords:
+                        dI.append(img[coord]-img[tuple(ncoord)])
+                    if isotropic:
+                        dI = [sum(dI)]                
+                    data[x,y,pos+1:pos+len(dI)+1] = dI           
+                    pos = pos + len(dI)
+            elif method == 'circle':
+                dI = []  
+                ncoords = neighbours_in_circle(x, y, levels)                   
+                for ncoord in ncoords:                    
                     dI.append(img[coord]-img[tuple(ncoord)])
-                if isotropic:
-                    dI = [sum(dI)]
-                data[x,y,pos+1:pos+len(dI)+1] = dI           
-                pos = pos + len(dI)
+                data[x,y,pos+1:pos+len(dI)+1] = dI
     data = data[levels:-levels,levels:-levels,:] #remove padding
     return data
 
@@ -75,10 +88,9 @@ def neighbours_in_circle(x,y,r):
     for i in range(-r,r+1):
         for j in range (-r,r+1):
             c = [x+i,y+j]
-            if ( c[0]**2 + c[1]**2 )**0.5 <= r:
+            if ( (x-c[0])**2 + (y-c[1])**2 )**0.5 <= r:
                 coords.append(c)
-    coords.remove([0,0])
-    print(coords)
+    coords.remove([x,y])    
     return coords
 
     #add to coords if inside    

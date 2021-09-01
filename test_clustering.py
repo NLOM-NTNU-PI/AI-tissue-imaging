@@ -23,6 +23,8 @@ class TestClustering(unittest.TestCase):
         self.assertTrue([-1,0] in result)
         result = util.neighbours_in_circle(0,0,2)
         self.assertTrue([2,0] in result)
+        result = util.neighbours_in_circle(3,3,2)
+        self.assertTrue([3,2] in result)
 
 if __name__ == '__main__':
     unittest.main()
