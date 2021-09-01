@@ -62,6 +62,27 @@ def neighbour(x,y,level):
         # etc..
     return coords    
 
+#Returns coordinates of all pixels that are less then or equal to r away from origin
+def neighbours_in_circle(x,y,r):
+    #validate input r>0 
+    if r < 0:
+        pass #throw exception
+    if not(isinstance(r,int)):
+        pass #throw exception
+    #initalize coords
+    coords = []
+    #loop through pixels
+    for i in range(-r,r+1):
+        for j in range (-r,r+1):
+            c = [x+i,y+j]
+            if ( c[0]**2 + c[1]**2 )**0.5 <= r:
+                coords.append(c)
+    coords.remove([0,0])
+    print(coords)
+    return coords
+
+    #add to coords if inside    
+
 #Calculates the total number of neighbours up to a certain level. 
 #Can be used to preassign size of arrays.
 def num_neighbours(level):

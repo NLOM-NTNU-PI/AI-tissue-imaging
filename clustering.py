@@ -72,7 +72,6 @@ labels = km.labels_.reshape(data.shape[0],data.shape[1]) #reshape to image
 
 #Visualization
 fig = plt.figure()
-
 ax = fig.add_subplot(121)
 ax.imshow(img_dp)
 ax.set_title('Original')
